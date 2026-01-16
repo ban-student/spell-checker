@@ -1,166 +1,69 @@
-# spell-checker
-import streamlit as st
-import openai
-import pyttsx3
-import speech_recognition as sr
-from spellchecker import SpellChecker
-import language_tool_python
-from symspellpy import SymSpell
-import os
+📝 AI Spell & Grammar Checker
 
-# ✅ Streamlit Page Configuration
-st.set_page_config(page_title="AI Spell & Grammar Checker", page_icon="📝", layout="centered")
+📌 Overview
+The AI Spell & Grammar Checker is a team-developed, voice-enabled multilingual web application designed to detect and correct spelling and grammatical errors from both text and speech input.
+The application supports English and Hindi, provides real-time corrections, and includes AI-based text enhancement to improve clarity and writing quality while preserving the original meaning.
+This project was developed as part of Ideathon 2.0: Lingua Hack, Mayukh Fest, Banasthali Vidyapeeth.
 
-# ✅ Load Spellchecker & Grammar Tools Efficiently
-@st.cache_resource
-def initialize_tools():
-    spell_checker = SpellChecker()
-    grammar_tool = language_tool_python.LanguageTool('en-US')
-    hindi_spell_checker = SymSpell()
-    dict_path = "hindi_words.txt"
-    if os.path.exists(dict_path):
-        hindi_spell_checker.load_dictionary(dict_path, term_index=0, count_index=1, separator="\t")
-    return spell_checker, grammar_tool, hindi_spell_checker
+🏆 Achievement
+🥉 3rd Place – Ideathon 2.0: Lingua Hack
+Event: Mayukh Fest, Banasthali Vidyapeeth
+Recognition: Awarded for developing a voice- and text-based grammar & spell-checking web application
 
-spell_checker, grammar_tool, hindi_spell_checker = initialize_tools()
+👥 Team Information
+Project Type: Group Project
+Team Members:
+Palak Kaushik
+Shatakshi Singh
+Aarushi
+akshita
 
-# ✅ Function to Speak Text
-def speak_text(text):
-    engine = pyttsx3.init()
-    engine.say(text)
-    engine.runAndWait()
+🎯 Problem Statement
+Accurate writing in multiple languages is challenging, especially for students and non-native speakers.
+Most conventional spell checkers:
+Offer limited multilingual support
+Do not support voice-based interaction
+Lack contextual grammar correction
+The objective of this project was to build an intelligent, accessible, and multilingual spell & grammar checking system that works seamlessly with both text and speech input.
 
-# ✅ Function to Capture Microphone Input
-def recognize_speech():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎤 Listening... Speak now!")
-        recognizer.adjust_for_ambient_noise(source)
-        try:
-            audio = recognizer.listen(source, timeout=5)
-            text = recognizer.recognize_google(audio, language='hi')
-            return text
-        except sr.UnknownValueError:
-            return "❌ Could not understand the audio."
-        except sr.RequestError:
-            return "❌ Speech recognition service is unavailable."
+🧠 Solution Approach
+Designed and developed a Streamlit-based interactive web application
+Implemented English spell correction using PySpellChecker
+Integrated grammar checking using LanguageTool
+Added Hindi spell correction using SymSpell with a custom dictionary
+Enabled speech-to-text input using SpeechRecognition
+Implemented text-to-speech output using pyttsx3
+Integrated LLM-based AI enhancement for improving text quality and fluency
 
-# ✅ OpenAI API Key (Replace with a secure method in production)
-OPENAI_API_KEY = "your-api-key-here"
-openai.api_key = OPENAI_API_KEY
+🛠️ Tech Stack
+Programming Language: Python
+Web Framework: Streamlit
+Spell Checking: PySpellChecker, SymSpell
+Grammar Checking: LanguageTool
+Speech-to-Text: SpeechRecognition
+Text-to-Speech: pyttsx3
+AI Text Enhancement: OpenAI (LLM-based)
+Version Control: Git & GitHub
 
-# ✅ Title
-st.markdown("<h1 style='text-align: center; color: #FF9800;'>📝 AI Spell & Grammar Checker</h1>", unsafe_allow_html=True)
+🧪 Key Features
+✅ English spelling correction
+✅ English grammar correction
+✅ Hindi spell auto-correction
+🎤 Voice-based input using microphone
+🔊 Audio output for corrected text
+✨ AI-powered text enhancement
+💾 Session-based text persistence
 
-# ✅ Session State for Text Persistence
-if "user_text" not in st.session_state:
-    st.session_state.user_text = ""
-if "speak_corrected" not in st.session_state:
-    st.session_state.speak_corrected = False
-if "speak_ai" not in st.session_state:
-    st.session_state.speak_ai = False
+📊 Application Capabilities
+Real-time spelling and grammar correction
+Multilingual input support (English & Hindi)
+Context-aware AI-based text improvement
+Accessibility through speech input and audio output
+Efficient performance using cached resources
 
-# ✅ Microphone Input Button
-if st.button("🎤 Speak Input"):
-    spoken_text = recognize_speech()
-    if "❌" not in spoken_text:
-        st.session_state.user_text = spoken_text
-    else:
-        st.warning(spoken_text)
-
-# ✅ User Input (Text Area)
-st.session_state.user_text = st.text_area("Enter text below:", st.session_state.user_text, height=200)
-
-# ✅ Function for Real-Time Corrections
-def correct_text(text):
-    if not text.strip():
-        return "", [], []
-    
-    words = text.split()
-    misspelled_words = spell_checker.unknown(words)
-    
-    corrected_text = text
-    spelling_fixes = []
-    for word in misspelled_words:
-        best_suggestion = spell_checker.correction(word) or word
-        corrected_text = corrected_text.replace(word, best_suggestion)
-        spelling_fixes.append(f"❌ {word} ➝ ✅ {best_suggestion}")
-    
-    grammar_issues = grammar_tool.check(corrected_text)
-    if grammar_issues:
-        corrected_text = language_tool_python.utils.correct(corrected_text, grammar_issues)
-    
-    return corrected_text, spelling_fixes, grammar_issues
-
-# ✅ Function for Hindi Autocorrection
-def correct_hindi_text(text):
-    if not text.strip():
-        return ""
-    corrected_text = ""
-    words = text.split()
-    for word in words:
-        suggestions = hindi_spell_checker.lookup(word, verbosity=0, max_edit_distance=2)
-        if suggestions:
-            corrected_text += suggestions[0].term + " "
-        else:
-            corrected_text += word + " "
-    return corrected_text.strip()
-
-# ✅ Function for AI-Based Enhancement
-def enhance_text_with_ai(text):
-    if not text.strip():
-        return "⚠ Please enter some text."
-    
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": f"Improve the following text while keeping its meaning:\n{text}"}]
-        )
-        return response["choices"][0]["message"]["content"]
-    except Exception as e:
-        return f"❌ Error: {str(e)}"
-
-# ✅ Real-Time Processing
-corrected_text, spelling_fixes, grammar_issues = correct_text(st.session_state.user_text)
-hindi_corrected_text = correct_hindi_text(st.session_state.user_text)
-
-st.subheader("✅ Auto-Corrected Text:")
-st.text_area("Corrected Output:", corrected_text, height=200)
-
-st.subheader("✅ Hindi Auto-Corrected Text:")
-st.text_area("Hindi Corrected Output:", hindi_corrected_text, height=200)
-
-if st.button("🔊 Listen to Corrected Text"):
-    st.session_state.speak_corrected = True
-    st.rerun()
-
-if st.session_state.speak_corrected:
-    speak_text(corrected_text)
-    st.session_state.speak_corrected = False
-    st.rerun()
-
-if spelling_fixes:
-    st.subheader("🔴 Spelling Corrections:")
-    for fix in spelling_fixes:
-        st.markdown(fix, unsafe_allow_html=True)
-
-if grammar_issues:
-    st.subheader("🟡 Grammar Corrections:")
-    for issue in grammar_issues:
-        st.markdown(f"🔴 Error: {issue.context}", unsafe_allow_html=True)
-        st.markdown(f"💡 Suggestion: <span style='color:green'>{', '.join(issue.replacements)}</span>", unsafe_allow_html=True)
-
-# ✅ AI Text Enhancement
-if st.session_state.user_text.strip():
-    improved_text = enhance_text_with_ai(st.session_state.user_text)
-    st.subheader("✨ AI-Enhanced Version:")
-    st.text_area("AI-Suggested Output:", improved_text, height=200)
-
-    if st.button("🔊 Listen to AI-Enhanced Text"):
-        st.session_state.speak_ai = True
-        st.rerun()
-
-    if st.session_state.speak_ai:
-        speak_text(improved_text)
-        st.session_state.speak_ai = False
-        st.rerun()
+🙏 Acknowledgements
+Ideathon 2.0: Lingua Hack, Mayukh Fest, Banasthali Vidyapeeth
+OpenAI for AI-based text enhancement
+LanguageTool for grammar correction
+Streamlit for rapid application development
+Open-source contributors to PySpellChecker, SymSpell, and SpeechRecognition
