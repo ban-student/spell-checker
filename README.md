@@ -10,14 +10,6 @@ This project was developed as part of Ideathon 2.0: Lingua Hack, Mayukh Fest, Ba
 Event: Mayukh Fest, Banasthali Vidyapeeth
 Recognition: Awarded for developing a voice- and text-based grammar & spell-checking web application
 
-👥 Team Information
-Project Type: Group Project
-Team Members:
-Palak Kaushik
-Shatakshi Singh
-Aarushi
-akshita
-
 🎯 Problem Statement
 Accurate writing in multiple languages is challenging, especially for students and non-native speakers.
 Most conventional spell checkers:
