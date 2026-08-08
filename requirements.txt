@@ -1,0 +1,8 @@
+streamlit>=1.35
+pyspellchecker>=0.8
+language-tool-python>=2.7
+symspellpy>=6.7
+SpeechRecognition>=3.10
+pyttsx3>=2.90
+PyAudio>=0.2.13
+google-genai>=0.3
